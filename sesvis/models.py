@@ -1,6 +1,5 @@
 from django.db import models
 
-# Create your models here.
 class Corpus(models.Model):
     corpus_id = models.IntegerField()
     name = models.TextField()
@@ -9,18 +8,35 @@ class Corpus(models.Model):
 class SubCorpus(models.Model):
     sub_corpus_id = models.IntegerField()
     name = models.TextField()
-    description = models.TextField()
     corpus = models.ForeignKey(Corpus)
+    description = models.TextField()
     
-    
+class Topic(models.Model):
+    topic_id = models.IntegerField()
+    corpus = models.ForeignKey(Corpus)
 
+class ProbWordGivenTopic(models.Model):
+    topic = models.ForeignKey(Topic)
+    word = models.TextField()
+    prob = models.FloatField()
 
+class Document(models.Model):
+    doc_id = models.IntegerField()
+    title = models.TextField()
+    text = models.TextField()
+    corpus = models.ForeignKey(Corpus)
 
-# class Poll(models.Model):
-#     question = models.CharField(max_length=200)
-#     pub_date = models.DateTimeField('date published')
+class ProbTopicGivenDoc(models.Model):
+    topic = models.ForeignKey(Topic)
+    document = models.ForeignKey(Document)
+    prob = models.FloatField()
 
-# class Choice(models.Model):
-#     poll = models.ForeignKey(Poll)
-#     choice = models.CharField(max_length=200)
-#     votes = models.IntegerField()
+class SubCorpusContent(models.Model):
+    subcorpus = models.ForeignKey(SubCorpus)
+    document = models.ForeignKey(Document)
+
+class TokenLevelTopicAllocation(models.Model):
+    topic = models.ForeignKey(Topic)    
+    document = models.ForeignKey(Document)    
+    token_id = models.TextField()
+    word = models.TextField()
