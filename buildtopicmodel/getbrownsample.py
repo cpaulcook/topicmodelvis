@@ -21,7 +21,7 @@ if not os.path.exists(corpus_dir):
 for fname in nltk.corpus.brown.fileids(categories):
     outf = open(os.path.join(corpus_dir, fname + '.txt'), 'w')
     for word in nltk.corpus.brown.words(fname):
-        print >> outf, word.encode('utf8')
+        print >> outf, word.encode('utf8'),
     outf.close()
 
 # Create a directory for the output of the topic modeler if it doesn't exist

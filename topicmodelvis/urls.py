@@ -5,6 +5,9 @@ from django.conf.urls import patterns, include, url
 # admin.autodiscover()
 
 urlpatterns = patterns('',
+    url(r'^corpora/$', 'sesvis.views.corpora'),
+    url(r'^corpora/(?P<corpus_name>\w+)/$', 'sesvis.views.corpus'),
+    url(r'^corpora/(?P<corpus_name>\w+)/doc/(?P<document_title>[a-zA-z0-9\.]+)$', 'sesvis.views.document'),
     # Examples:
     # url(r'^$', 'topicmodelvis.views.home', name='home'),
     # url(r'^topicmodelvis/', include('topicmodelvis.foo.urls')),

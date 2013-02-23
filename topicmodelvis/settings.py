@@ -3,6 +3,14 @@
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
+# Use these to avoid having to put absolute paths in the config.
+# See TEMPLATE_DIRS
+import os
+ROOT_PATH = os.path.dirname(__file__)
+ROOT_PATH_PARENT = os.path.split(ROOT_PATH)[0]
+
+
+
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
@@ -106,6 +114,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
+    os.path.join(ROOT_PATH_PARENT,'sesvis','templates'),
 )
 
 INSTALLED_APPS = (

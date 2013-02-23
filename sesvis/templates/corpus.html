@@ -1,0 +1,21 @@
+{% if documents %}
+<p>{{ corpus.name }}</p>
+<p>Topics</p>
+    <ul>
+    {% for t,ws in words_for_topic.items %}
+    <li>{{ t.id }}
+    {% for w in ws %}
+      {{ w }}
+    {% endfor %}
+    </li>
+    {% endfor %}
+    </ul>
+<p>Documents</p>
+    <ul>
+    {% for doc in documents %}
+    <li><a href="doc/{{ doc.title }}">{{ doc.title }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No documents for {{ corpus.name }}.</p>
+{% endif %}

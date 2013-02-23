@@ -9,47 +9,72 @@ from django.test import TestCase
 from sesvis.models import *
 
 class SimpleTest(TestCase):
-    c = Corpus(name='try', description="try corpus")
-    sc = SubCorpus(name='trysc', corpus=c, description='try sc')
-    t = Topic(corpus=c)
-    pwgt = ProbWordGivenTopic(topic=t, word='blah', prob=0.53)
-    d = Document(title="mydoc", corpus=c)
-    doc_content = DocumentContent(document=d, 
-                                  text="This is the content of a document...")
-    ptgd = ProbTopicGivenDoc(topic=t, document=d, prob=0.67)
-    scc = SubCorpusContent(subcorpus=sc, document=d)
-    tlta = TokenLevelTopicAllocation(topic=t, document=d, token_id=57, 
-                                     word='testsareawesome')
 
-    def test_basic_addition(self):
-        """
-        Tests that 1 + 1 always equals 2.
-        """
-        self.assertEqual(1 + 1, 2)
+    def setUp(self):
+        self.c = Corpus(name='try', description="try corpus")
+        self.c.save()
+
+        self.sc = SubCorpus(name='trysc', corpus=self.c, description='try sc')
+        self.sc.save()
+
+        self.t = Topic(corpus=self.c)
+        self.t.save()
+
+        self.pwgt = ProbWordGivenTopic(topic=self.t, word='blah', prob=0.53)
+        self.pwgt.save()
+
+        self.pwgta = ProbWordGivenTopic(topic=self.t, word='hannah', prob=0.82)
+        self.pwgta.save()
+        self.pwgtb = ProbWordGivenTopic(topic=self.t, word='bananas', prob=0.12)
+        self.pwgtb.save()
+
+        self.d = Document(title="mydoc", corpus=self.c)
+        self.d.save()
+
+        self.doc_content = DocumentContent(document=self.d, 
+                                           text="This is the content of a document...")
+        self.doc_content.save()
+        
+        self.ptgd = ProbTopicGivenDoc(topic=self.t, document=self.d, prob=0.67)
+        self.ptgd.save()
+
+        self.scc = SubCorpusContent(subcorpus=self.sc, document=self.d)
+        self.scc.save()
+
+        self.tlta = TokenLevelTopicAllocation(topic=self.t, document=self.d, token_id=57, 
+                                     word='testsareawesome')
+        self.tlta.save()
+
 
     def test_create_corpus(self):
-        assert unicode(SimpleTest.c) == u'try'
+        assert unicode(self.c) == u'try'
 
     def test_create_subcorpus(self):
-        assert unicode(SimpleTest.sc) == u'try:trysc'
+        assert unicode(self.sc) == u'try:trysc'
 
     def test_create_topic(self):
-        assert unicode(SimpleTest.t) == u'try:None'
+        assert unicode(self.t) == u'try:1'
 
     def test_create_probwordgiventopic(self):
-        assert unicode(SimpleTest.pwgt) == u'try:None:blah'
+        assert unicode(self.pwgt) == u'try:1:blah'
         
     def test_document(self):
-        assert unicode(SimpleTest.d) == u'try:mydoc'
+        assert unicode(self.d) == u'try:mydoc'
 
     def test_document_content(self):
-        assert unicode(SimpleTest.doc_content) == u'try:mydoc:This is the content '
+        assert unicode(self.doc_content) == u'try:mydoc:This is the content '
 
     def test_probtopicgivendoc(self):
-        assert unicode(SimpleTest.ptgd) == u'try:mydoc:None'
+        assert unicode(self.ptgd) == u'try:mydoc:1'
     
+    def test_probtopicgivendoc_best_k_words(self):
+        assert self.t.best_k_words(k=2) == ['hannah', 'blah']
+
+    def test_probtopicgivendoc_best_k_words_probs(self):
+        assert self.t.best_k_words(k=2, probs=True) == [('hannah',0.82), ('blah',0.53)]
+
     def test_subcorpuscontent(self):
-        assert unicode(SimpleTest.scc) == u'try:trysc:mydoc'
+        assert unicode(self.scc) == u'try:trysc:mydoc'
 
     def test_tokenleveltopicallocation(self):
-        assert unicode(SimpleTest.tlta) == u'try:mydoc:None:57:testsareawesome'
+        assert unicode(self.tlta) == u'try:mydoc:1:57:testsareawesome'

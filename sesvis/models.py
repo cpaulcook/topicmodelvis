@@ -4,7 +4,7 @@ def build_unicode(*l):
     return ':'.join([unicode(x) for x in l])
 
 class Corpus(models.Model):
-    name = models.TextField()
+    name = models.TextField(unique=True)
     description = models.TextField()
 
     def __unicode__(self):
@@ -23,6 +23,25 @@ class Topic(models.Model):
 
     def __unicode__(self):
         return build_unicode(self.corpus.name, self.id)
+
+    def best_k_words(self, k, probs=False, prob_threshold=0.001):
+        '''Return the best k words for this topic. If probs is True,
+        return (word,prob) tuples instead of just
+        words. 
+
+        prob_threshold is a lower bound on the probability for a word
+        to be returned. Setting it higher speeds things up, but if one
+        of the top-k words has probability below this threshould we'll
+        miss it.'''
+
+        salient_pwgts = self.probwordgiventopic_set.filter(prob__gt=prob_threshold)
+        sorted_pwgts = sorted(salient_pwgts, key=lambda x : x.prob, 
+                              reverse=True)
+        best_pwgts = sorted_pwgts[:k]
+        if probs:
+            return [(x.word,x.prob) for x in best_pwgts]
+        else:
+            return [x.word for x in best_pwgts]
 
 class ProbWordGivenTopic(models.Model):
     topic = models.ForeignKey(Topic)
