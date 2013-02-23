@@ -40,7 +40,7 @@ class Document(models.Model):
         return build_unicode(self.corpus.name, self.title)
 
 class DocumentContent(models.Model):
-    document = models.ForeignKey(Document)
+    document = models.OneToOneField(Document)
     text = models.TextField()
     
     def __unicode__(self):
