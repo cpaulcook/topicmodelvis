@@ -176,11 +176,11 @@ if __name__ == '__main__':
 
     sub_corpora = create_subcorpora(c, doc_to_genre)
     topics = create_topics(c)
-    # create_prob_word_given_topics(c,topics)
+    create_prob_word_given_topics(c,topics)
     documents = create_documents(c)
     create_document_contents(documents)
-    # create_prob_topic_given_documents(topics, documents)
-    # create_subcorpus_contents(sub_corpora, documents, doc_to_genre)
-    # create_token_level_topic_allocation(topics, documents)
+    create_prob_topic_given_documents(topics, documents)
+    create_subcorpus_contents(sub_corpora, documents, doc_to_genre)
+    create_token_level_topic_allocation(topics, documents)
 
     print "Time elapsed:", time.time() - start_time
