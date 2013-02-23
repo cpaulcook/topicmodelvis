@@ -19,6 +19,9 @@ class SubCorpus(models.Model):
         return build_unicode(self.corpus.name, self.name)
 
 class Topic(models.Model):
+    # corpus_id,corpus_topic_id fields should be unique but Django
+    # doesn't appear to have any way to enforce this.
+    corpus_topic_id = models.IntegerField()
     corpus = models.ForeignKey(Corpus)
 
     def __unicode__(self):
@@ -34,7 +37,8 @@ class Topic(models.Model):
         of the top-k words has probability below this threshould we'll
         miss it.'''
 
-        salient_pwgts = self.probwordgiventopic_set.filter(prob__gt=prob_threshold)
+        salient_pwgts = \
+            self.probwordgiventopic_set.filter(prob__gt=prob_threshold)
         sorted_pwgts = sorted(salient_pwgts, key=lambda x : x.prob, 
                               reverse=True)
         best_pwgts = sorted_pwgts[:k]

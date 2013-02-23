@@ -15,15 +15,18 @@ def corpora(request):
 
 def corpus(request, corpus_name):
     c = Corpus.objects.get(name=corpus_name)
-    documents = sorted(Document.objects.filter(corpus__name=c), 
-                       key=lambda x : x.title)
+    # documents = sorted(Document.objects.filter(corpus__name=c), 
+    #                    key=lambda x : x.title)
     words_for_topic={}
     for t in c.topic_set.all():
         words_for_topic[t] = t.best_k_words(k=10)
 
     return render_to_response('corpus.html', {'corpus': c,
-                                              'documents': documents,
                                               'words_for_topic': words_for_topic})
+
+def topic(request, corpus_name, topic_id):
+    # ***** Working here. Need to add a topic_id to Topic *****
+    pass
 
 def document(request, corpus_name, document_title):
     c = Corpus.objects.get(name=corpus_name)
