@@ -32,7 +32,7 @@ if not os.path.exists(model_dir):
 genre_outf = open(os.path.join(model_dir, 'genres.txt'), 'w')
 for c in categories:
     for fname in nltk.corpus.brown.fileids(c):
-        print >> genre_outf, c, fname
+        print >> genre_outf, fname + '.txt', c
 genre_outf.close()
 
 mallet_data_file = os.path.join(model_dir, 'corpus.mallet')

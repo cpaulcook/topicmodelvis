@@ -34,11 +34,17 @@ class ProbWordGivenTopic(models.Model):
 
 class Document(models.Model):
     title = models.TextField()
-    text = models.TextField()
     corpus = models.ForeignKey(Corpus)
 
     def __unicode__(self):
         return build_unicode(self.corpus.name, self.title)
+
+class DocumentContent(models.Model):
+    document = models.ForeignKey(Document)
+    text = models.TextField()
+    
+    def __unicode__(self):
+        return build_unicode(self.document.corpus.name, self.document.title, self.text[:20])
 
 class ProbTopicGivenDoc(models.Model):
     topic = models.ForeignKey(Topic)

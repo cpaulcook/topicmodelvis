@@ -13,7 +13,9 @@ class SimpleTest(TestCase):
     sc = SubCorpus(name='trysc', corpus=c, description='try sc')
     t = Topic(corpus=c)
     pwgt = ProbWordGivenTopic(topic=t, word='blah', prob=0.53)
-    d = Document(title="mydoc", text="the text of a document...", corpus=c)
+    d = Document(title="mydoc", corpus=c)
+    doc_content = DocumentContent(document=d, 
+                                  text="This is the content of a document...")
     ptgd = ProbTopicGivenDoc(topic=t, document=d, prob=0.67)
     scc = SubCorpusContent(subcorpus=sc, document=d)
     tlta = TokenLevelTopicAllocation(topic=t, document=d, token_id=57, 
@@ -39,6 +41,9 @@ class SimpleTest(TestCase):
         
     def test_document(self):
         assert unicode(SimpleTest.d) == u'try:mydoc'
+
+    def test_document_content(self):
+        assert unicode(SimpleTest.doc_content) == u'try:mydoc:This is the content '
 
     def test_probtopicgivendoc(self):
         assert unicode(SimpleTest.ptgd) == u'try:mydoc:None'

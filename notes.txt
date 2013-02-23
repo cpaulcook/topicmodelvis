@@ -1,0 +1,7 @@
+To clear the database
+
+manage.py reset sesvis
+
+To run tests
+
+manage.py test sesvis
