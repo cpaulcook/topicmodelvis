@@ -1,7 +1,7 @@
 {% if available_corpora %}
     <ul>
     {% for corpus in available_corpora %}
-        <li><a href="{{ corpus.name }}">{{ corpus.name }}</a></li>
+        <li><a href="/corpora/{{ corpus.name }}">{{ corpus.name }}</a></li>
     {% endfor %}
     </ul>
 {% else %}

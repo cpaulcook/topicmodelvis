@@ -17,7 +17,7 @@ class SimpleTest(TestCase):
         self.sc = SubCorpus(name='trysc', corpus=self.c, description='try sc')
         self.sc.save()
 
-        self.t = Topic(corpus=self.c)
+        self.t = Topic(corpus=self.c, corpus_topic_id=3)
         self.t.save()
 
         self.pwgt = ProbWordGivenTopic(topic=self.t, word='blah', prob=0.53)
@@ -53,7 +53,7 @@ class SimpleTest(TestCase):
         assert unicode(self.sc) == u'try:trysc'
 
     def test_create_topic(self):
-        assert unicode(self.t) == u'try:1'
+        assert unicode(self.t) == u'try:1:3'
 
     def test_create_probwordgiventopic(self):
         assert unicode(self.pwgt) == u'try:1:blah'

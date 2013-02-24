@@ -1,15 +1,22 @@
-<p>{{ corpus.name }}</p>
+<p>{{ corpus.name }} <a href="/corpora">View all corpora</a></p>
 <p>Topics</p>
     <ul>
     {% for t,ws in words_for_topic.items %}
-    <li>{{ t.id }}
+    <li>{{ t.corpus_topic_id }}
+      <a href="/corpora/{{ corpus.name }}/topic/{{ t.corpus_topic_id }}">
     {% for w in ws %}
       {{ w }}
     {% endfor %}
+    </a>
     </li>
     {% endfor %}
     </ul>
-    
+<p>Sub-corpora</p>
+    <ul>
+    {% for sc in subcorpus_names %}
+    <li><a href="/corpora/{{ corpus.name }}/subcorpus/{{ sc }}">{{ sc }}</a></li>
+    {% endfor %}
+    </ul>
 <!-- <p>Documents</p> -->
 <!--     <ul> -->
 <!--     {% for doc in documents %} -->

@@ -25,9 +25,9 @@ class Topic(models.Model):
     corpus = models.ForeignKey(Corpus)
 
     def __unicode__(self):
-        return build_unicode(self.corpus.name, self.id)
+        return build_unicode(self.corpus.name, self.id, self.corpus_topic_id)
 
-    def best_k_words(self, k, probs=False, prob_threshold=0.001):
+    def best_k_words(self, k=10, probs=False, prob_threshold=0.001):
         '''Return the best k words for this topic. If probs is True,
         return (word,prob) tuples instead of just
         words. 
@@ -46,6 +46,12 @@ class Topic(models.Model):
             return [(x.word,x.prob) for x in best_pwgts]
         else:
             return [x.word for x in best_pwgts]
+
+    def best_k_documents(self, k=10):
+        '''Return the top-k documents in terms of prob(t|d)'''
+        return [x.document for x in sorted(self.probtopicgivendoc_set.all(), 
+                                           key=lambda x : x.prob, 
+                                           reverse=True)[:k]]
 
 class ProbWordGivenTopic(models.Model):
     topic = models.ForeignKey(Topic)

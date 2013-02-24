@@ -7,7 +7,13 @@ from django.conf.urls import patterns, include, url
 urlpatterns = patterns('',
     url(r'^corpora/$', 'sesvis.views.corpora'),
     url(r'^corpora/(?P<corpus_name>\w+)/$', 'sesvis.views.corpus'),
-    url(r'^corpora/(?P<corpus_name>\w+)/doc/(?P<document_title>[a-zA-z0-9\.]+)$', 'sesvis.views.document'),
+    url(r'^corpora/(?P<corpus_name>\w+)/topic/(?P<corpus_topic_id>\d+)$', 
+        'sesvis.views.topic'),
+    url(r'^corpora/(?P<corpus_name>\w+)/subcorpus/(?P<subcorpus_name>\w+)$', 
+        'sesvis.views.subcorpus'),
+    url(r'^corpora/(?P<corpus_name>\w+)/doc/(?P<document_title>[a-zA-z0-9\.]+)$',
+        'sesvis.views.document'),
+
     # Examples:
     # url(r'^$', 'topicmodelvis.views.home', name='home'),
     # url(r'^topicmodelvis/', include('topicmodelvis.foo.urls')),

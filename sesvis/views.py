@@ -15,18 +15,33 @@ def corpora(request):
 
 def corpus(request, corpus_name):
     c = Corpus.objects.get(name=corpus_name)
-    # documents = sorted(Document.objects.filter(corpus__name=c), 
-    #                    key=lambda x : x.title)
     words_for_topic={}
     for t in c.topic_set.all():
-        words_for_topic[t] = t.best_k_words(k=10)
+        words_for_topic[t] = t.best_k_words()
+    subcorpus_names = [x.name for x in c.subcorpus_set.all()]
 
-    return render_to_response('corpus.html', {'corpus': c,
-                                              'words_for_topic': words_for_topic})
+    return render_to_response('corpus.html', 
+                              {'corpus': c, 
+                               'words_for_topic': words_for_topic,
+                               'subcorpus_names':subcorpus_names})
 
-def topic(request, corpus_name, topic_id):
-    # ***** Working here. Need to add a topic_id to Topic *****
-    pass
+def topic(request, corpus_name, corpus_topic_id):
+    t = Topic.objects.get(corpus__name=corpus_name,
+                          corpus_topic_id=corpus_topic_id)
+    best_words = t.best_k_words()
+    best_documents = [x.title for x in t.best_k_documents()]
+
+    return render_to_response('topic.html', 
+                              {'corpus_name': corpus_name,
+                               'corpus_topic_id': corpus_topic_id,
+                               'best_words': best_words,
+                               'best_documents': best_documents})
+
+def subcorpus(request, corpus_name, subcorpus_name):
+    return render_to_response('subcorpus.html', 
+                              {'corpus_name': corpus_name,
+                               'subcorpus_name': subcorpus_name})
+
 
 def document(request, corpus_name, document_title):
     c = Corpus.objects.get(name=corpus_name)
