@@ -5,17 +5,3 @@ manage.py reset sesvis
 To run tests
 
 manage.py test sesvis
-
-
-Should we ensure corpus name is unique?
-
-When we design our URLs if you're viewing something for a particular
-corpus it makes sense to have that be part of the URL (makes them more
-clear). But then we'd get into trouble if we don't assume corpus names
-are unique. Can we enforce this in the DB? It would certainly simplify
-things...
-
-I think assuming corpus names are unique is fine, as long as we have 
-some contingency for multiple versions of the same corpus. We might 
-want to make the unique id some combination of name and date then?
-- Karl
