@@ -5,6 +5,8 @@ from django.template import Context, loader
 from django.http import HttpResponse
 from sesvis.models import *
 
+# ***** Need to return 404s when invalid corpus, doc, etc. is passed *****
+
 def corpora(request):
     available_corpora = sorted(Corpus.objects.all(), key=lambda x : x.name)
     t = loader.get_template('corpora.html')
@@ -38,10 +40,17 @@ def topic(request, corpus_name, corpus_topic_id):
                                'best_documents': best_documents})
 
 def subcorpus(request, corpus_name, subcorpus_name):
+    sc = SubCorpus.objects.get(corpus__name=corpus_name, name=subcorpus_name)
+    best_topics = sc.best_k_topics(k=5)
+
+    words_for_topic = {}
+    for t in best_topics:
+        words_for_topic[t] = t.best_k_words()
+
     return render_to_response('subcorpus.html', 
                               {'corpus_name': corpus_name,
-                               'subcorpus_name': subcorpus_name})
-
+                               'subcorpus_name': subcorpus_name,
+                               'words_for_topic': words_for_topic})
 
 def document(request, corpus_name, document_title):
     c = Corpus.objects.get(name=corpus_name)

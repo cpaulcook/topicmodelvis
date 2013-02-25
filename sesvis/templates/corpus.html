@@ -1,3 +1,5 @@
+{% extends "base.html" %}
+{% block content %}
 <p>{{ corpus.name }} <a href="/corpora">View all corpora</a></p>
 <p>Topics</p>
     <ul>
@@ -17,6 +19,9 @@
     <li><a href="/corpora/{{ corpus.name }}/subcorpus/{{ sc }}">{{ sc }}</a></li>
     {% endfor %}
     </ul>
+{% endblock %}
+
+
 <!-- <p>Documents</p> -->
 <!--     <ul> -->
 <!--     {% for doc in documents %} -->

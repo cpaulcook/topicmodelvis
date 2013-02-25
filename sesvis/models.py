@@ -1,5 +1,8 @@
 from django.db import models
 
+def is_prob_dist(l):
+    return 0.99 < sum(l) < 1.01 and all([0 < x < 1 for x in l])
+
 def build_unicode(*l):
     return ':'.join([unicode(x) for x in l])
 
@@ -11,6 +14,8 @@ class Corpus(models.Model):
         return build_unicode((self.name))
 
 class SubCorpus(models.Model):
+    # **** name,corpus has to be unique, but not sure how to enforce
+    # **** this in Django ****
     name = models.TextField()
     corpus = models.ForeignKey(Corpus)
     description = models.TextField()
@@ -18,6 +23,27 @@ class SubCorpus(models.Model):
     def __unicode__(self):
         return build_unicode(self.corpus.name, self.name)
 
+    def ave_prob_topic_given_doc(self):
+        documents = [x.document for x in self.subcorpuscontent_set.all()]
+
+        topic_probs = {}
+        num_docs = len(documents)
+        for t in self.corpus.topic_set.all():
+            probs = \
+                [d.probtopicgivendoc_set.get(topic=t).prob for d in documents]
+            topic_probs[t] = sum(probs) / num_docs
+
+        assert is_prob_dist(topic_probs.values())
+
+        return topic_probs
+
+    def best_k_topics(self, k=10):
+        topic_probs = self.ave_prob_topic_given_doc()
+        sorted_topics = [x[0] for x in sorted(topic_probs.items(),
+                                              key=lambda x : x[1],
+                                              reverse=True)]
+        return sorted_topics[:k]
+            
 class Topic(models.Model):
     # corpus_id,corpus_topic_id fields should be unique but Django
     # doesn't appear to have any way to enforce this.
@@ -76,8 +102,8 @@ class DocumentContent(models.Model):
         return build_unicode(self.document.corpus.name, self.document.title, self.text[:20])
 
 class ProbTopicGivenDoc(models.Model):
-    topic = models.ForeignKey(Topic)
-    document = models.ForeignKey(Document)
+    topic = models.ForeignKey(Topic, db_index=True)
+    document = models.ForeignKey(Document, db_index=True)
     prob = models.FloatField()
 
     def __unicode__(self):

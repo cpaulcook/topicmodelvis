@@ -17,54 +17,84 @@ class SimpleTest(TestCase):
         self.sc = SubCorpus(name='trysc', corpus=self.c, description='try sc')
         self.sc.save()
 
+        self.sc2 = SubCorpus(name='trysc', corpus=self.c, description='try sc2')
+        self.sc2.save()
+
         self.t = Topic(corpus=self.c, corpus_topic_id=3)
         self.t.save()
+        self.t2 = Topic(corpus=self.c, corpus_topic_id=4)
+        self.t2.save()
 
         self.pwgt = ProbWordGivenTopic(topic=self.t, word='blah', prob=0.53)
         self.pwgt.save()
-
-        self.pwgta = ProbWordGivenTopic(topic=self.t, word='hannah', prob=0.82)
-        self.pwgta.save()
-        self.pwgtb = ProbWordGivenTopic(topic=self.t, word='bananas', prob=0.12)
-        self.pwgtb.save()
+        ProbWordGivenTopic(topic=self.t, word='hannah', prob=0.82).save()
+        ProbWordGivenTopic(topic=self.t, word='bananas', prob=0.12).save()
 
         self.d = Document(title="mydoc", corpus=self.c)
         self.d.save()
+        self.d2 = Document(title="mydoc2", corpus=self.c)
+        self.d2.save()
 
         self.doc_content = DocumentContent(document=self.d, 
                                            text="This is the content of a document...")
         self.doc_content.save()
         
-        self.ptgd = ProbTopicGivenDoc(topic=self.t, document=self.d, prob=0.67)
+        self.ptgd = ProbTopicGivenDoc(topic=self.t, document=self.d, prob=0.4)
         self.ptgd.save()
+        ProbTopicGivenDoc(topic=self.t2, document=self.d, prob=0.6).save()
+        ProbTopicGivenDoc(topic=self.t, document=self.d2, prob=0.1).save()
+        ProbTopicGivenDoc(topic=self.t2, document=self.d2, prob=0.9).save()
 
         self.scc = SubCorpusContent(subcorpus=self.sc, document=self.d)
         self.scc.save()
+        SubCorpusContent(subcorpus=self.sc2, document=self.d).save()
+        SubCorpusContent(subcorpus=self.sc2, document=self.d2).save()
 
         self.tlta = TokenLevelTopicAllocation(topic=self.t, document=self.d, token_id=57, 
                                      word='testsareawesome')
         self.tlta.save()
 
+    def test_is_prob_dist_prob(self):
+        self.assertTrue(is_prob_dist([0.5, 0.5]))
 
-    def test_create_corpus(self):
+    def test_is_prob_dist_not_prob_dist(self):
+        self.assertFalse(is_prob_dist([0.5, 0.6]))
+
+    def test_is_prob_dist_item_not_prob(self):
+        self.assertFalse(is_prob_dist([0.5, 1.1]))
+
+    def test_build_unicode(self):
+        assert build_unicode('a','b','c') == u'a:b:c'
+
+    def test_corpus_unicode(self):
         assert unicode(self.c) == u'try'
 
-    def test_create_subcorpus(self):
+    def test_subcorpus_unicode(self):
         assert unicode(self.sc) == u'try:trysc'
 
-    def test_create_topic(self):
+    def test_subcorpus_ave_prob_topic_given_doc_1(self):
+        assert self.sc.ave_prob_topic_given_doc() == {self.t:0.4,self.t2:0.6}
+
+    def test_subcorpus_ave_prob_topic_given_doc_2(self):
+        print self.sc2.ave_prob_topic_given_doc()
+        assert self.sc2.ave_prob_topic_given_doc() == {self.t:0.25,self.t2:0.75}
+
+    # def test_subcorpus_best_k_topics(self):
+    #     ***** Working here *****
+
+    def test_topic_unicode(self):
         assert unicode(self.t) == u'try:1:3'
 
-    def test_create_probwordgiventopic(self):
+    def test_probwordgiventopic_unicode(self):
         assert unicode(self.pwgt) == u'try:1:blah'
         
-    def test_document(self):
+    def test_document_unicode(self):
         assert unicode(self.d) == u'try:mydoc'
 
-    def test_document_content(self):
+    def test_document_content_unicode(self):
         assert unicode(self.doc_content) == u'try:mydoc:This is the content '
 
-    def test_probtopicgivendoc(self):
+    def test_probtopicgivendoc_unicode(self):
         assert unicode(self.ptgd) == u'try:mydoc:1'
     
     def test_probtopicgivendoc_best_k_words(self):
@@ -73,8 +103,8 @@ class SimpleTest(TestCase):
     def test_probtopicgivendoc_best_k_words_probs(self):
         assert self.t.best_k_words(k=2, probs=True) == [('hannah',0.82), ('blah',0.53)]
 
-    def test_subcorpuscontent(self):
+    def test_subcorpuscontent_unicode(self):
         assert unicode(self.scc) == u'try:trysc:mydoc'
 
-    def test_tokenleveltopicallocation(self):
+    def test_tokenleveltopicallocation_unicode(self):
         assert unicode(self.tlta) == u'try:mydoc:1:57:testsareawesome'

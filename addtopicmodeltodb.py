@@ -19,9 +19,6 @@ args = parser.parse_args()
 def get_model_fname(fname):
     return os.path.join(args.model_dir, fname)
 
-def is_prob_dist(l):
-    return 0.99 < sum(l) < 1.01 and all([0 < x < 1 for x in l])
-
 def create_corpus():
     print "Creating corpus"
     c = Corpus(name=args.corpus_name, description=args.corpus_description)
