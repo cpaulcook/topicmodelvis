@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<p>Topic {{ corpus_topic_id }} for <a href="/corpora/{{ corpus_name }}">{{ corpus_name }}</a></p>
+<p>Top words:</p>
+<p>{% for w in best_words %}
+  {{ w }}
+  {% endfor %}
+</p>
+<p>Top Documents:</p>
+    <ul>
+    {% for d in best_documents %}
+    <li><a href="/corpora/{{ corpus_name }}/doc/{{ d }}">{{ d }}</a></li>
+    {% endfor %}
+    </ul>
+{% endblock %}
