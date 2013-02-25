@@ -15,4 +15,7 @@ clear). But then we'd get into trouble if we don't assume corpus names
 are unique. Can we enforce this in the DB? It would certainly simplify
 things...
 
-
+I think assuming corpus names are unique is fine, as long as we have 
+some contingency for multiple versions of the same corpus. We might 
+want to make the unique id some combination of name and date then?
+- Karl
