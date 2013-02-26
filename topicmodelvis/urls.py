@@ -11,7 +11,9 @@ urlpatterns = patterns('',
     # of corpora.
     # It also needs to go first or else it matches with one of the 
     # corpus patterns.
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/$', include(admin.site.urls)),
+    #url(r'^sesvis/$', 'django.contrib.auth.views.login'),
+    url(r'^sesvis/$', 'sesvis.views.sesvis'),
         
     # Rest of url patterns:
     url(r'^corpora/$', 'sesvis.views.corpora'),

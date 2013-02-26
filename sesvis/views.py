@@ -1,9 +1,10 @@
 # Create your views here.
 
 from django.shortcuts import render_to_response, get_object_or_404
-from django.template import Context, loader
+from django.template import RequestContext, loader
 from django.http import HttpResponse
 from sesvis.models import *
+from django.contrib.auth import login, authenticate
 
 # ***** Need to return 404s when invalid corpus, doc, etc. is passed *****
 
@@ -90,4 +91,25 @@ def search(request, corpus_name):
     return render_to_response('search.html', {'corpus_name': corpus_name,
                                               'search_term': search_term,
                                               'word_prob_topics': word_prob_topics})
-
+    
+#def login(request):
+#    uname = request.POST['username']
+#    pword = request.POST['password']
+#    user = authenticate(username=uname, password=pword)
+#    if user is not None:
+#        # We probably don't need this as we're unlikely to 
+#        # de-activate users. -KG
+#        if user.is_active:
+#            login(request, user)
+#            return render_to_response('corpora.html', "user": user)
+#        else:
+            
+def sesvis(request):
+    form = {'username': 'username',
+            'uname_label': 'username: ',
+            'pword_label': 'password: ',
+            'password': 'password'
+           } 
+    
+    return render_to_response('index.html', {'form':form}, 
+                context_instance=RequestContext(request))

@@ -115,6 +115,9 @@ TEMPLATE_DIRS = (
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
     os.path.join(ROOT_PATH_PARENT,'sesvis','templates'),
+    # Going to add a hideous Windows directory here. 
+    # Don't hate me! Hate the System!
+    'C:\\ProgramFiles\\BitNami DjangoStack\\apps\django\\django\\contrib\\admin\\templates',
 )
 
 INSTALLED_APPS = (
