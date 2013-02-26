@@ -1,5 +1,6 @@
 from django.db import models
 import heapq
+from django.contrib.auth.models import User
 
 def is_prob_dist(l):
     return 0.99 < sum(l) < 1.01 and all([0 < x < 1 for x in l])
