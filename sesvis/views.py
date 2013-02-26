@@ -52,10 +52,14 @@ def document(request, corpus_name, document_title):
     text = d.documentcontent.text
     return render_to_response('document.html', {'title': d.title,'text': text})
 
-def compare_subcorpora(request, corpus_name, 
-                       subcorpus_name1, subcorpus_name2, k=10):
-    sc1 = SubCorpus.objects.get(corpus__name=corpus_name, name=subcorpus_name1)
-    sc2 = SubCorpus.objects.get(corpus__name=corpus_name, name=subcorpus_name2)
+def compare_subcorpora(request, corpus_name):
+    subcorpus_name1 = request.GET.get('subcorpus_name1')
+    subcorpus_name2 = request.GET.get('subcorpus_name2')
+
+    sc1 = SubCorpus.objects.get(corpus__name=corpus_name, 
+                                name=subcorpus_name1)
+    sc2 = SubCorpus.objects.get(corpus__name=corpus_name, 
+                                name=subcorpus_name2)
 
     sc1_topic_probs = sc1.ave_prob_topic_given_doc()
     sc2_topic_probs = sc2.ave_prob_topic_given_doc()
@@ -64,14 +68,13 @@ def compare_subcorpora(request, corpus_name,
     for t in sc1_topic_probs:
         topic_prob_ratios[t] = sc1_topic_probs[t] / sc2_topic_probs[t]
     
+    # Num top words to display per topic
+    k = 10
     def best_topic_words_helper(helper_f):
         return [(x[0],x[0].best_k_words()) for x in helper_f(k, topic_prob_ratios.items(), 
                                                              key=lambda x : x[1])]
     sc1_best_topic_words = best_topic_words_helper(heapq.nlargest)
     sc2_best_topic_words = best_topic_words_helper(heapq.nsmallest)
-
-    print sc1_best_topic_words
-    print sc2_best_topic_words
 
     return render_to_response('compare.html', {'corpus_name': corpus_name,
                                                'subcorpus_name1': subcorpus_name1,

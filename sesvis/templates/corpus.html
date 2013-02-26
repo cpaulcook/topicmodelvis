@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
-<p>{{ corpus.name }} <a href="/corpora">View all corpora</a></p>
-<p>Search</p>
 
+<p>{{ corpus.name }} <a href="/corpora">View all corpora</a></p>
+
+<p>Search</p>
 <form action="/corpora/{{ corpus.name }}/search/" method="get">
   <input type="text" name="q">
   <input type="submit" value="Search">
 </form>
-
 
 <p>Topics</p>
     <ul>
@@ -21,10 +21,25 @@
     </li>
     {% endfor %}
     </ul>
+
 <p>Sub-corpora</p>
     <ul>
     {% for sc in subcorpus_names %}
     <li><a href="/corpora/{{ corpus.name }}/subcorpus/{{ sc }}">{{ sc }}</a></li>
     {% endfor %}
     </ul>
+
+<p>Compare sub-corpora</p>
+<form action="/corpora/{{ corpus.name }}/compare/" method="get">
+  <p>Sub-corpus A<br>
+  {% for sc in subcorpus_names %}
+  <input type="radio" name="subcorpus_name1" value="{{ sc }}">{{ sc }}<br>
+  {% endfor %}</p>
+  <p>Sub-corpus B<br>
+  {% for sc in subcorpus_names %}
+  <input type="radio" name="subcorpus_name2" value="{{ sc }}">{{ sc }}<br>
+  {% endfor %}</p>
+  <input type="submit" value="Compare">
+</form> 
+
 {% endblock %}
