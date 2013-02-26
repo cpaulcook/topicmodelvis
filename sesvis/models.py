@@ -1,6 +1,7 @@
 from django.db import models
 import heapq
 from django.contrib.auth.models import User
+from django.conf import settings
 
 def is_prob_dist(l):
     return 0.99 < sum(l) < 1.01 and all([0 < x < 1 for x in l])
@@ -34,17 +35,17 @@ class SubCorpus(models.Model):
             probs = \
                 [d.probtopicgivendoc_set.get(topic=t).prob for d in documents]
             topic_probs[t] = sum(probs) / num_docs
-
-        assert is_prob_dist(topic_probs.values())
+        
+        if settings.DEBUG:
+            assert is_prob_dist(topic_probs.values())
 
         return topic_probs
 
     def best_k_topics(self, k=10):
         topic_probs = self.ave_prob_topic_given_doc()
-        sorted_topics = [x[0] for x in sorted(topic_probs.items(),
-                                              key=lambda x : x[1],
-                                              reverse=True)]
-        return sorted_topics[:k]
+        best_topic_probs = heapq.nlargest(k, topic_probs.items(), 
+                                          key=lambda x : x[1])
+        return [x[0] for x in best_topic_probs]
             
 class Topic(models.Model):
     # corpus_id,corpus_topic_id fields should be unique but Django
@@ -55,7 +56,7 @@ class Topic(models.Model):
     def __unicode__(self):
         return build_unicode(self.corpus.name, self.id, self.corpus_topic_id)
 
-    def best_k_pwgts(self, k=10, prob_threshold=0.001):
+    def best_k_words(self, k=10, prob_threshold=0.001, probs=False):
         '''Return the best pwgts (which refer to words) for this
         topic.
 
@@ -63,15 +64,6 @@ class Topic(models.Model):
         to be returned. Setting it higher speeds things up, but if one
         of the top-k words has probability below this threshould we'll
         miss it.'''
-
-        # ***** Working here ****
-
-        # salient_pwgts = \
-        #     self.probwordgiventopic_set.filter(prob__gt=prob_threshold)
-        # sorted_pwgts = sorted(salient_pwgts, key=lambda x : x.prob, 
-        #                       reverse=True)
-        # best_pwgts = sorted_pwgts[:k]
-
         best_pwgts = heapq.nlargest(k, 
                                     self.probwordgiventopic_set.filter(prob__gt=prob_threshold), 
                                     key=lambda x : x.prob)

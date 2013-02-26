@@ -22,6 +22,10 @@ urlpatterns = patterns('',
         'sesvis.views.subcorpus'),
     url(r'^corpora/(?P<corpus_name>\w+)/doc/(?P<document_title>[a-zA-z0-9\.]+)$',
         'sesvis.views.document'),
+    url(r'^corpora/(?P<corpus_name>\w+)/compare/(?P<subcorpus_name1>\w+)/(?P<subcorpus_name2>\w+)$',
+        'sesvis.views.compare_subcorpora'),
+    url(r'^corpora/(?P<corpus_name>\w+)/search/$', 
+        'sesvis.views.search'),
 
     # Examples:
     # url(r'^$', 'topicmodelvis.views.home', name='home'),

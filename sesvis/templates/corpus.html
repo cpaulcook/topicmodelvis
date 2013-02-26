@@ -1,9 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
 <p>{{ corpus.name }} <a href="/corpora">View all corpora</a></p>
+<p>Search</p>
+
+<form action="/corpora/{{ corpus.name }}/search/" method="get">
+  <input type="text" name="q">
+  <input type="submit" value="Search">
+</form>
+
+
 <p>Topics</p>
     <ul>
-    {% for t,ws in words_for_topic.items %}
+    {% for t,ws in words_for_topic %}
     <li>{{ t.corpus_topic_id }}
       <a href="/corpora/{{ corpus.name }}/topic/{{ t.corpus_topic_id }}">
     {% for w in ws %}
@@ -20,14 +28,3 @@
     {% endfor %}
     </ul>
 {% endblock %}
-
-
-<!-- <p>Documents</p> -->
-<!--     <ul> -->
-<!--     {% for doc in documents %} -->
-<!--     <li><a href="doc/{{ doc.title }}">{{ doc.title }}</a></li> -->
-<!--     {% endfor %} -->
-<!--     </ul> -->
-
-<!--     <p>No documents for {{ corpus.name }}.</p> -->
-

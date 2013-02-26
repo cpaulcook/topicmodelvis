@@ -3,7 +3,7 @@
 <p>Subcorpus {{ subcorpus_name }} for <a href="/corpora/{{ corpus_name }}">{{ corpus_name }}</a></p>
 <p>Topics</p>
     <ul>
-    {% for t,ws in words_for_topic.items %}
+    {% for t,ws in words_for_topic %}
     <li>{{ t.corpus_topic_id }}
       <a href="/corpora/{{ corpus_name }}/topic/{{ t.corpus_topic_id }}">
     {% for w in ws %}

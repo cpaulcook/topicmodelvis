@@ -9,17 +9,13 @@ from sesvis.models import *
 
 def corpora(request):
     available_corpora = sorted(Corpus.objects.all(), key=lambda x : x.name)
-    t = loader.get_template('corpora.html')
-    c = Context({
-            'available_corpora': available_corpora,
-    })
-    return HttpResponse(t.render(c))
+    return render_to_response('corpora.html', 
+                              {'available_corpora': available_corpora})
 
 def corpus(request, corpus_name):
     c = Corpus.objects.get(name=corpus_name)
-    words_for_topic={}
-    for t in c.topic_set.all():
-        words_for_topic[t] = t.best_k_words()
+    sorted_topics = sorted(c.topic_set.all(), key=lambda x : x.corpus_topic_id)
+    words_for_topic = [(t, t.best_k_words()) for t in sorted_topics]
     subcorpus_names = [x.name for x in c.subcorpus_set.all()]
 
     return render_to_response('corpus.html', 
@@ -42,10 +38,7 @@ def topic(request, corpus_name, corpus_topic_id):
 def subcorpus(request, corpus_name, subcorpus_name):
     sc = SubCorpus.objects.get(corpus__name=corpus_name, name=subcorpus_name)
     best_topics = sc.best_k_topics(k=5)
-
-    words_for_topic = {}
-    for t in best_topics:
-        words_for_topic[t] = t.best_k_words()
+    words_for_topic = [(t, t.best_k_words()) for t in best_topics]
 
     return render_to_response('subcorpus.html', 
                               {'corpus_name': corpus_name,
@@ -54,7 +47,47 @@ def subcorpus(request, corpus_name, subcorpus_name):
 
 def document(request, corpus_name, document_title):
     c = Corpus.objects.get(name=corpus_name)
-    d = Document.objects.all().get(corpus__name=c,title=document_title)
+    d = Document.objects.all().get(corpus__name=c, title=document_title)
     text = d.documentcontent.text
     return render_to_response('document.html', {'title': d.title,'text': text})
+
+def compare_subcorpora(request, corpus_name, 
+                       subcorpus_name1, subcorpus_name2, k=10):
+    sc1 = SubCorpus.objects.get(corpus__name=corpus_name, name=subcorpus_name1)
+    sc2 = SubCorpus.objects.get(corpus__name=corpus_name, name=subcorpus_name2)
+
+    sc1_topic_probs = sc1.ave_prob_topic_given_doc()
+    sc2_topic_probs = sc2.ave_prob_topic_given_doc()
+
+    topic_prob_ratios = {}
+    for t in sc1_topic_probs:
+        topic_prob_ratios[t] = sc1_topic_probs[t] / sc2_topic_probs[t]
+    
+    def best_topic_words_helper(helper_f):
+        return [(x[0],x[0].best_k_words()) for x in helper_f(k, topic_prob_ratios.items(), 
+                                                             key=lambda x : x[1])]
+    sc1_best_topic_words = best_topic_words_helper(heapq.nlargest)
+    sc2_best_topic_words = best_topic_words_helper(heapq.nsmallest)
+
+    print sc1_best_topic_words
+    print sc2_best_topic_words
+
+    return render_to_response('compare.html', {'corpus_name': corpus_name,
+                                               'subcorpus_name1': subcorpus_name1,
+                                               'subcorpus_name2': subcorpus_name2,
+                                               'sc1_best_topic_words': sc1_best_topic_words,
+                                               'sc2_best_topic_words': sc2_best_topic_words})
+
+def search(request, corpus_name):
+    search_term = request.GET.get('q')
+    pwgts = ProbWordGivenTopic.objects.filter(word=search_term).filter(topic__corpus__name=corpus_name)
+    num_results = 5
+    best_pwgts = heapq.nlargest(num_results, pwgts, key=lambda x : x.prob)
+    word_prob_topics = [(x.topic,
+                         x.prob,
+                         x.topic.best_k_words()) for x in best_pwgts]
+
+    return render_to_response('search.html', {'corpus_name': corpus_name,
+                                              'search_term': search_term,
+                                              'word_prob_topics': word_prob_topics})
 
