@@ -1,4 +1,5 @@
 from django.db import models
+import heapq
 
 def is_prob_dist(l):
     return 0.99 < sum(l) < 1.01 and all([0 < x < 1 for x in l])
@@ -53,21 +54,27 @@ class Topic(models.Model):
     def __unicode__(self):
         return build_unicode(self.corpus.name, self.id, self.corpus_topic_id)
 
-    def best_k_words(self, k=10, probs=False, prob_threshold=0.001):
-        '''Return the best k words for this topic. If probs is True,
-        return (word,prob) tuples instead of just
-        words. 
+    def best_k_pwgts(self, k=10, prob_threshold=0.001):
+        '''Return the best pwgts (which refer to words) for this
+        topic.
 
         prob_threshold is a lower bound on the probability for a word
         to be returned. Setting it higher speeds things up, but if one
         of the top-k words has probability below this threshould we'll
         miss it.'''
 
-        salient_pwgts = \
-            self.probwordgiventopic_set.filter(prob__gt=prob_threshold)
-        sorted_pwgts = sorted(salient_pwgts, key=lambda x : x.prob, 
-                              reverse=True)
-        best_pwgts = sorted_pwgts[:k]
+        # ***** Working here ****
+
+        # salient_pwgts = \
+        #     self.probwordgiventopic_set.filter(prob__gt=prob_threshold)
+        # sorted_pwgts = sorted(salient_pwgts, key=lambda x : x.prob, 
+        #                       reverse=True)
+        # best_pwgts = sorted_pwgts[:k]
+
+        best_pwgts = heapq.nlargest(k, 
+                                    self.probwordgiventopic_set.filter(prob__gt=prob_threshold), 
+                                    key=lambda x : x.prob)
+
         if probs:
             return [(x.word,x.prob) for x in best_pwgts]
         else:
