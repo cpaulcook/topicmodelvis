@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+{% if word_prob_topics %}
+<p>Search results for <em>{{ search_term }}</em>  in <a href="/corpora/{{ corpus_name }}">{{ corpus_name }}</a>.</p>
+<p>Topics</p>
+    <ul>
+    {% for t,p,ws in word_prob_topics %}
+    <li>{{ p }}
+      {{ t.corpus_topic_id }}
+      <a href="/corpora/{{ corpus_name }}/topic/{{ t.corpus_topic_id }}">
+	{% for w in ws %}
+	{{ w }}
+	{% endfor %}
+      </a>
+    </li>
+    {% endfor %}
+    </ul>
+{% else %}
+<p>No results for <em>{{ search_term }}</em> in <a href="/corpora/{{ corpus_name }}">{{ corpus_name }}</a>.</p>
+{% endif %}
+{% endblock %}

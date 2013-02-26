@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<p>Comparing subcorpora {{ subcorpus_name1 }} and {{ subcorpus_name2 }} for <a href="/corpora/{{ corpus_name }}">{{ corpus_name }}</a></p>
+<p>Best topics for {{ subcorpus_name1 }}</p>
+    <ul>
+    {% for t,ws in sc1_best_topic_words %}
+    <li>{{ t.corpus_topic_id }}
+      <a href="/corpora/{{ corpus_name }}/topic/{{ t.corpus_topic_id }}">
+    {% for w in ws %}
+      {{ w }}
+    {% endfor %}
+    </a>
+    </li>
+    {% endfor %}
+    </ul>
+<p>Best topics for {{ subcorpus_name2 }}</p>
+    <ul>
+    {% for t,ws in sc2_best_topic_words %}
+    <li>{{ t.corpus_topic_id }}
+      <a href="/corpora/{{ corpus_name }}/topic/{{ t.corpus_topic_id }}">
+    {% for w in ws %}
+      {{ w }}
+    {% endfor %}
+    </a>
+    </li>
+    {% endfor %}
+    </ul>
+{% endblock %}
+
