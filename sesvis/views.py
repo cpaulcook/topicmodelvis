@@ -2,18 +2,23 @@
 
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext, loader
-from django.http import HttpResponse
+from django.http import HttpResponseRedirect
 from sesvis.models import *
-from django.contrib.auth import login, authenticate
+from django.contrib.auth.views import redirect_to_login
+from django.contrib.auth import logout
 
 # ***** Need to return 404s when invalid corpus, doc, etc. is passed *****
 
 def corpora(request):
+    if not request.user.is_authenticated():
+        return redirect_to_login(request.path, login_url='/login/') 
     available_corpora = sorted(Corpus.objects.all(), key=lambda x : x.name)
     return render_to_response('corpora.html', 
-                              {'available_corpora': available_corpora})
+                {'available_corpora': available_corpora})
 
 def corpus(request, corpus_name):
+    if not request.user.is_authenticated():
+        return redirect_to_login(request.path, login_url='/login/') 
     c = Corpus.objects.get(name=corpus_name)
     sorted_topics = sorted(c.topic_set.all(), key=lambda x : x.corpus_topic_id)
     words_for_topic = [(t, t.best_k_words()) for t in sorted_topics]
@@ -25,6 +30,8 @@ def corpus(request, corpus_name):
                                'subcorpus_names':subcorpus_names})
 
 def topic(request, corpus_name, corpus_topic_id):
+    if not request.user.is_authenticated():
+        return redirect_to_login(request.path, login_url='/login/')
     t = Topic.objects.get(corpus__name=corpus_name,
                           corpus_topic_id=corpus_topic_id)
     best_words = t.best_k_words()
@@ -37,6 +44,8 @@ def topic(request, corpus_name, corpus_topic_id):
                                'best_documents': best_documents})
 
 def subcorpus(request, corpus_name, subcorpus_name):
+    if not request.user.is_authenticated():
+        return redirect_to_login(request.path, login_url='/login/')
     sc = SubCorpus.objects.get(corpus__name=corpus_name, name=subcorpus_name)
     best_topics = sc.best_k_topics(k=5)
     words_for_topic = [(t, t.best_k_words()) for t in best_topics]
@@ -47,12 +56,16 @@ def subcorpus(request, corpus_name, subcorpus_name):
                                'words_for_topic': words_for_topic})
 
 def document(request, corpus_name, document_title):
+    if not request.user.is_authenticated():
+        return redirect_to_login(request.path, login_url='/login/')
     c = Corpus.objects.get(name=corpus_name)
     d = Document.objects.all().get(corpus__name=c, title=document_title)
     text = d.documentcontent.text
     return render_to_response('document.html', {'title': d.title,'text': text})
 
 def compare_subcorpora(request, corpus_name):
+    if not request.user.is_authenticated():
+        return redirect_to_login(request.path, login_url='/login/')
     subcorpus_name1 = request.GET.get('subcorpus_name1')
     subcorpus_name2 = request.GET.get('subcorpus_name2')
 
@@ -83,6 +96,8 @@ def compare_subcorpora(request, corpus_name):
                                                'sc2_best_topic_words': sc2_best_topic_words})
 
 def search(request, corpus_name):
+    if not request.user.is_authenticated():
+        return redirect_to_login(request.path, login_url='/login/')
     search_term = request.GET.get('q')
     pwgts = ProbWordGivenTopic.objects.filter(word=search_term).filter(topic__corpus__name=corpus_name)
     num_results = 5
@@ -95,17 +110,9 @@ def search(request, corpus_name):
                                               'search_term': search_term,
                                               'word_prob_topics': word_prob_topics})
     
-#def login(request):
-#    uname = request.POST['username']
-#    pword = request.POST['password']
-#    user = authenticate(username=uname, password=pword)
-#    if user is not None:
-#        # We probably don't need this as we're unlikely to 
-#        # de-activate users. -KG
-#        if user.is_active:
-#            login(request, user)
-#            return render_to_response('corpora.html', "user": user)
-#        else:
+def outlog(request):
+    logout(request)
+    return HttpResponseRedirect('/sesvis/')
             
 def sesvis(request):
     form = {'username': 'username',

@@ -9,6 +9,11 @@
 </head>
 <body>
 <div class="container">
+{% if user.is_authenticated %}
+    <a href="/outlog/">logout</a>
+{% endif %}
+</div>
+<div class="container">
 {% block content %}{% endblock %}
 </div>
 </body>
