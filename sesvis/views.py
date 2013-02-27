@@ -23,6 +23,9 @@ def corpus(request, corpus_name):
     sorted_topics = sorted(c.topic_set.all(), key=lambda x : x.corpus_topic_id)
     words_for_topic = [(t, t.best_k_words()) for t in sorted_topics]
     subcorpus_names = [x.name for x in c.subcorpus_set.all()]
+    # Once we populate the right tables, this code should manage access.
+    # u = User.objects.get_by_natural_key(request.user.username)
+    # accessible = set(c.subcorpus_set.all()).intersection(set(u.subcorpus_set.all())
 
     return render_to_response('corpus.html', 
                               {'corpus': c, 
@@ -115,11 +118,5 @@ def outlog(request):
     return HttpResponseRedirect('/sesvis/')
             
 def sesvis(request):
-    form = {'username': 'username',
-            'uname_label': 'username: ',
-            'pword_label': 'password: ',
-            'password': 'password'
-           } 
-    
     return render_to_response('index.html', 
                     context_instance=RequestContext(request))

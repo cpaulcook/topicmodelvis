@@ -9,6 +9,15 @@ def is_prob_dist(l):
 def build_unicode(*l):
     return ':'.join([unicode(x) for x in l])
 
+def get_subcorpus_access(uname, corpus_name):
+    """
+    Returns the list of sub-corpora the user has access to, 
+    given the current corpus.
+    """
+    u = User.objects.get_by_natural_key(uname)
+    sc = SubCorpus.objects.get_query_set(users=u)
+    return filter(lambda x: x.corpus.name == corpus_name, sc)
+
 class Corpus(models.Model):
     name = models.TextField(unique=True)
     description = models.TextField()
@@ -22,6 +31,7 @@ class SubCorpus(models.Model):
     name = models.TextField()
     corpus = models.ForeignKey(Corpus)
     description = models.TextField()
+    users = models.ManyToManyField(User)
     
     def __unicode__(self):
         return build_unicode(self.corpus.name, self.name)
@@ -127,3 +137,14 @@ class TokenLevelTopicAllocation(models.Model):
     def __unicode__(self):
         return build_unicode(self.topic.corpus.name, self.document.title, 
                              self.topic.id, self.token_id, self.word)
+
+
+
+class SubCorpusAccess(models.Model):
+    subcorpus = models.ForeignKey(SubCorpus)
+    user = models.ForeignKey(User)
+    
+    def __unicode__(self):
+        return build_unicode(self.user.username, self.subcorpus)
+    
+        

@@ -20,7 +20,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'topicmodel.db',                # Or path to database file if using sqlite3.
+        'NAME': 'C:\\Users\\Karl\\git\\topicmodelvis-new\\topicmodel.db',                # Or path to database file if using sqlite3.
         'USER': '',                      # Not used with sqlite3.
         'PASSWORD': '',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
@@ -117,7 +117,7 @@ TEMPLATE_DIRS = (
     os.path.join(ROOT_PATH_PARENT,'sesvis','templates'),
     # Going to add a hideous Windows directory here. 
     # Don't hate me! Hate the System!
-    'C:\\ProgramFiles\\BitNami DjangoStack\\apps\django\\django\\contrib\\admin\\templates',
+    #'C:\\ProgramFiles\\BitNami DjangoStack\\apps\django\\django\\contrib\\admin\\templates',
 )
 
 INSTALLED_APPS = (
