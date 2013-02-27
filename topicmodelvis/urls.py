@@ -12,7 +12,8 @@ urlpatterns = patterns('',
     # It also needs to go first or else it matches with one of the 
     # corpus patterns.
     url(r'^admin/$', include(admin.site.urls)),
-    #url(r'^sesvis/$', 'django.contrib.auth.views.login'),
+    url(r'^login/$', 'django.contrib.auth.views.login', 
+        {'template_name': 'login.html'}),
     url(r'^sesvis/$', 'sesvis.views.sesvis'),
         
     # Rest of url patterns:

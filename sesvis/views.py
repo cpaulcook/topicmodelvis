@@ -114,5 +114,5 @@ def sesvis(request):
             'password': 'password'
            } 
     
-    return render_to_response('index.html', {'form':form}, 
-                context_instance=RequestContext(request))
+    return render_to_response('index.html', 
+                    context_instance=RequestContext(request))
