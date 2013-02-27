@@ -25,11 +25,12 @@ def create_corpus():
     c.save()
     return c
 
-def create_subcorpora(c, doc_to_genre):
+def create_subcorpora(c):
     print "Creating sub-corpora"
 
+    genres = set([x.split()[0] for x in open(get_model_fname('genres.txt'))])
     sub_corpora = {}
-    for g in set(doc_to_genre.values()):
+    for g in genres:
         # ***** There's not really much to describe about a genre...
         # remove this field? *****
         s = SubCorpus(name=g, corpus=c, description=g)
@@ -133,10 +134,17 @@ def create_prob_topic_given_documents(topics, documents):
 
 @transaction.commit_manually
 def create_subcorpus_contents(sub_corpora, documents, doc_to_genre):
+    # Get the genres for each document
+    doc_to_genres = {}
+    for line in open(get_model_fname('genres.txt')):
+        genre,doc = line.split()
+        doc_to_genres[doc] = doc_to_genres.get(doc, []) + [genre]
+
     print "Creating sub-corpus contents"
-    for d in doc_to_genre:
-        scc = SubCorpusContent(subcorpus=sub_corpora[doc_to_genre[d]],
-                               document=documents[d])
+    for d in doc_to_genres:
+        for g in doc_to_genres[d]:
+            scc = SubCorpusContent(subcorpus=sub_corpora[g],
+                                   document=documents[d])
         scc.save()
     transaction.commit()
 
@@ -170,8 +178,8 @@ if __name__ == '__main__':
 
     # Load the genre information
     doc_to_genre = dict([x.split() for x in open(get_model_fname('genres.txt'))])
-
-    sub_corpora = create_subcorpora(c, doc_to_genre)
+    
+    sub_corpora = create_subcorpora(c)
     topics = create_topics(c)
     create_prob_word_given_topics(c,topics)
     documents = create_documents(c)

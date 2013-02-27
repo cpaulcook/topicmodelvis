@@ -5,3 +5,15 @@ manage.py reset sesvis
 To run tests
 
 manage.py test sesvis
+
+
+To build the topic models (but use appropriate path to Mallet...) :
+
+python getbrownsample.py state_of_the_union ~/mallet-2.0.7/bin/mallet
+python getbrownsample.py brown_sample ~/mallet-2.0.7/bin/mallet
+python getbrownsample.py brown_sample2 ~/mallet-2.0.7/bin/mallet
+
+
+
+
+python addtopicmodeltodb.py brown_sample2 "A second sample from the Brown Corpus" buildtopicmodel/brown_sample2_corpus buildtopicmodel/brown_sample2_model

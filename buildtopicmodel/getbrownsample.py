@@ -1,27 +1,62 @@
 import argparse, nltk, os, subprocess
 
-# A script to extract a sample of the Brown Corpus and run Mallet on
-# it with 20 topics
-
 parser = argparse.ArgumentParser()
+parser.add_argument('corpus', type=str,
+                    choices=['brown', 'brown_sample', 'brown_sample2',
+                             'state_of_the_union'],
+                    help="Corpus to Run topic modeller on")
 parser.add_argument('mallet_bin', type=str,
                     help="Path to mallet")
 args = parser.parse_args()
 
-corpus_dir = 'brown_sample_corpus'
-model_dir = 'brown_sample_model'
+model_dir = args.corpus + '_model'
+corpus_dir = args.corpus + '_corpus'
 
-categories = ['news', 'romance']
+if args.corpus == 'brown':
+    nltk_corpus = nltk.corpus.brown
+    num_topics = 50
+    categories = nltk_corpus.categories()
+    fnames = nltk_corpus.fileids()
+    fnames_for_category = lambda x : nltk_corpus.fileids(x)
+    encoding = 'utf8'
+elif args.corpus == 'brown_sample':
+    nltk_corpus = nltk.corpus.brown
+    num_topics = 20
+    categories = ['news', 'romance']
+    fnames = nltk.corpus.brown.fileids(categories)
+    fnames_for_category = lambda x : nltk_corpus.fileids(x)
+    encoding = 'utf8'
+elif args.corpus == 'brown_sample2':
+    nltk_corpus = nltk.corpus.brown
+    num_topics = 30
+    categories = ['news', 'romance', 'science_fiction', 'religion']
+    fnames = nltk.corpus.brown.fileids(categories)
+    fnames_for_category = lambda x : nltk_corpus.fileids(x)
+    encoding = 'utf8'
+elif args.corpus == 'state_of_the_union':
+    nltk_corpus = nltk.corpus.state_union
+    num_topics = 20
+    categories = set([x.split('.')[0].split('-')[1] for x in nltk_corpus.fileids()])
+    fnames = nltk.corpus.state_union.fileids()
+    fnames_for_category = lambda x : [f for f in fnames if x in f]
+    encoding = 'latin1'
+
+words_for_fname = lambda x : nltk_corpus.words(x)
 
 # Create the output directory if it doesn't exist
 if not os.path.exists(corpus_dir):
     os.mkdir(corpus_dir)
 
 # Create the files for Mallet to topic model
-for fname in nltk.corpus.brown.fileids(categories):
-    outf = open(os.path.join(corpus_dir, fname + '.txt'), 'w')
-    for word in nltk.corpus.brown.words(fname):
-        print >> outf, word.encode('utf8'),
+for fname in fnames:
+    if fname.endswith('.txt'):
+        output_fname = fname
+    else:
+        output_fname = fname + '.txt'
+
+    outf = open(os.path.join(corpus_dir, output_fname), 'w')
+    for word in words_for_fname(fname):
+        print >> outf, word.decode(encoding).encode('utf8'),
     outf.close()
 
 # Create a directory for the output of the topic modeler if it doesn't exist
@@ -31,8 +66,10 @@ if not os.path.exists(model_dir):
 # Write a file containing genre information to the topic model output dir
 genre_outf = open(os.path.join(model_dir, 'genres.txt'), 'w')
 for c in categories:
-    for fname in nltk.corpus.brown.fileids(c):
-        print >> genre_outf, fname + '.txt', c
+    for fname in fnames_for_category(c):
+        if not fname.endswith('.txt'):
+            fname += '.txt'
+        print >> genre_outf, c, fname
 genre_outf.close()
 
 mallet_data_file = os.path.join(model_dir, 'corpus.mallet')
@@ -46,7 +83,7 @@ subprocess.call(mallet_import_cmd)
 
 # Run Mallet
 train_mallet_cmd = [args.mallet_bin, 'train-topics', '--input', 
-                    mallet_data_file, '--num-topics', '20', '--output-state',
+                    mallet_data_file, '--num-topics', str(num_topics), '--output-state',
                     os.path.join(model_dir, 'state.gz'), '--output-topic-keys',
                     os.path.join(model_dir, 'topic-keys.txt'), 
                     '--topic-word-weights-file', 
