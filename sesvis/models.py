@@ -137,14 +137,3 @@ class TokenLevelTopicAllocation(models.Model):
     def __unicode__(self):
         return build_unicode(self.topic.corpus.name, self.document.title, 
                              self.topic.id, self.token_id, self.word)
-
-
-
-class SubCorpusAccess(models.Model):
-    subcorpus = models.ForeignKey(SubCorpus)
-    user = models.ForeignKey(User)
-    
-    def __unicode__(self):
-        return build_unicode(self.user.username, self.subcorpus)
-    
-        

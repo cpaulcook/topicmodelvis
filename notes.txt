@@ -7,13 +7,15 @@ To run tests
 manage.py test sesvis
 
 
-To build the topic models (but use appropriate path to Mallet...) :
+To build the topic models (but use appropriate path to Mallet... and
+do it from here: topicmodelvis/buildtopicmodel):
 
 python getbrownsample.py state_of_the_union ~/mallet-2.0.7/bin/mallet
 python getbrownsample.py brown_sample ~/mallet-2.0.7/bin/mallet
 python getbrownsample.py brown_sample2 ~/mallet-2.0.7/bin/mallet
 
+To add the topic models to the DB:
 
+topicmodelvis$ python addtopicmodeltodb.py brown_sample "A sample of genres from the Brown Corpus" buildtopicmodel/brown_sample2_corpus buildtopicmodel/brown_sample2_model
 
-
-python addtopicmodeltodb.py brown_sample2 "A second sample from the Brown Corpus" buildtopicmodel/brown_sample2_corpus buildtopicmodel/brown_sample2_model
+python addtopicmodeltodb.py state_of_the_union "The State of the Union Address" buildtopicmodel/state_of_the_union_corpus/ buildtopicmodel/state_of_the_union_model/
