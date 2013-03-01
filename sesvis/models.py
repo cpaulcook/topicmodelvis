@@ -4,6 +4,10 @@ from django.contrib.auth.models import User
 from django.conf import settings
 
 def is_prob_dist(l):
+    """
+    Returns True if the list l is a probability distribution, and
+    False otherwise.
+    """
     return 0.99 < sum(l) < 1.01 and all([0 < x < 1 for x in l])
 
 def build_unicode(*l):
@@ -26,8 +30,6 @@ class Corpus(models.Model):
         return build_unicode((self.name))
 
 class SubCorpus(models.Model):
-    # **** name,corpus has to be unique, but not sure how to enforce
-    # **** this in Django ****
     name = models.TextField()
     corpus = models.ForeignKey(Corpus)
     description = models.TextField()
@@ -37,6 +39,10 @@ class SubCorpus(models.Model):
         return build_unicode(self.corpus.name, self.name)
 
     def ave_prob_topic_given_doc(self):
+        """
+        Returns p(topic|doc) averaged over all documents in SubCorpus.
+        """
+
         documents = [x.document for x in self.subcorpuscontent_set.all()]
 
         topic_probs = {}
@@ -52,30 +58,29 @@ class SubCorpus(models.Model):
         return topic_probs
 
     def best_k_topics(self, k=10):
+        """
+        Returns the best k topics for this SubCorpus.
+        """
+
         topic_probs = self.ave_prob_topic_given_doc()
         best_topic_probs = heapq.nlargest(k, topic_probs.items(), 
                                           key=lambda x : x[1])
         return [x[0] for x in best_topic_probs]
             
 class Topic(models.Model):
-    # corpus_id,corpus_topic_id fields should be unique but Django
-    # doesn't appear to have any way to enforce this.
     corpus_topic_id = models.IntegerField()
     corpus = models.ForeignKey(Corpus)
 
     def __unicode__(self):
         return build_unicode(self.corpus.name, self.id, self.corpus_topic_id)
 
-    def best_k_words(self, k=10, prob_threshold=0.001, probs=False):
-        '''Return the best pwgts (which refer to words) for this
-        topic.
+    def best_k_words(self, k=10, probs=False):
+        '''
+        Returns the best k words for this topic. If probs is True
+        return (word,prob) tuples for the best k words.
+        '''
 
-        prob_threshold is a lower bound on the probability for a word
-        to be returned. Setting it higher speeds things up, but if one
-        of the top-k words has probability below this threshould we'll
-        miss it.'''
-        best_pwgts = heapq.nlargest(k, 
-                                    self.probwordgiventopic_set.filter(prob__gt=prob_threshold), 
+        best_pwgts = heapq.nlargest(k, self.probwordgiventopic_set.all(),
                                     key=lambda x : x.prob)
 
         if probs:
@@ -84,7 +89,9 @@ class Topic(models.Model):
             return [x.word for x in best_pwgts]
 
     def best_k_documents(self, k=10):
-        '''Return the top-k documents in terms of prob(t|d)'''
+        '''
+        Returns the best k documents in terms of prob(t|d)
+        '''
         return [x.document for x in sorted(self.probtopicgivendoc_set.all(), 
                                            key=lambda x : x.prob, 
                                            reverse=True)[:k]]
@@ -109,7 +116,8 @@ class DocumentContent(models.Model):
     text = models.TextField()
     
     def __unicode__(self):
-        return build_unicode(self.document.corpus.name, self.document.title, self.text[:20])
+        return build_unicode(self.document.corpus.name, 
+                             self.document.title, self.text[:20])
 
 class ProbTopicGivenDoc(models.Model):
     topic = models.ForeignKey(Topic, db_index=True)
