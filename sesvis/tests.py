@@ -7,8 +7,12 @@ Replace this with more appropriate tests for your application.
 
 from django.test import TestCase
 from sesvis.models import *
+from sesvis.views import *
+from django.contrib.auth.models import User
 
-class SimpleTest(TestCase):
+
+
+class ModelTest(TestCase):
 
     def setUp(self):
         self.c = Corpus(name='try', description="try corpus")
@@ -130,3 +134,21 @@ class SimpleTest(TestCase):
 
     def test_tokenleveltopicallocation_unicode(self):
         assert unicode(self.tlta) == u'try:mydoc:1:57:testsareawesome'
+
+class ViewTest(TestCase):
+    
+    def setUp(self):
+        user = self.client.login(username='fakeuser', password='fakepasswd')
+
+    def test_corpora_nologin(self):
+        resp = self.client.get('/corpora/')
+        self.assertEqual(resp.status_code, 302)        
+
+    def test_corpora_login(self):
+        User.objects.create_user('fakeuser', 'fake@email.com', 'fakepasswd')
+        user = self.client.login(username='fakeuser', password='fakepasswd')
+        resp = self.client.get('/corpora/')
+        print resp
+        self.assertEqual(resp.status_code, 200)
+
+    
