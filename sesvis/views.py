@@ -7,8 +7,6 @@ from sesvis.models import *
 from django.contrib.auth.views import redirect_to_login
 from django.contrib.auth import logout
 
-# ***** Need to return 404s when invalid corpus, doc, etc. is passed *****
-
 def corpora(request):
     if not request.user.is_authenticated():
         return redirect_to_login(request.path, login_url='/login/') 
@@ -19,7 +17,7 @@ def corpora(request):
 def corpus(request, corpus_name):
     if not request.user.is_authenticated():
         return redirect_to_login(request.path, login_url='/login/') 
-    c = Corpus.objects.get(name=corpus_name)
+    c = get_object_or_404(Corpus, name=corpus_name)
     sorted_topics = sorted(c.topic_set.all(), key=lambda x : x.corpus_topic_id)
     words_for_topic = [(t, t.best_k_words()) for t in sorted_topics]
     subcorpus_names = [x.name for x in c.subcorpus_set.all()]
@@ -35,7 +33,7 @@ def corpus(request, corpus_name):
 def topic(request, corpus_name, corpus_topic_id):
     if not request.user.is_authenticated():
         return redirect_to_login(request.path, login_url='/login/')
-    t = Topic.objects.get(corpus__name=corpus_name,
+    t = get_object_or_404(Topic, corpus__name=corpus_name,
                           corpus_topic_id=corpus_topic_id)
     best_words = t.best_k_words()
     best_documents = [x.title for x in t.best_k_documents()]
@@ -49,7 +47,8 @@ def topic(request, corpus_name, corpus_topic_id):
 def subcorpus(request, corpus_name, subcorpus_name):
     if not request.user.is_authenticated():
         return redirect_to_login(request.path, login_url='/login/')
-    sc = SubCorpus.objects.get(corpus__name=corpus_name, name=subcorpus_name)
+    sc = get_object_or_404(Subcorpus, corpus__name=corpus_name,
+                           name=subcorpus_name)
     best_topics = sc.best_k_topics(k=5)
     words_for_topic = [(t, t.best_k_words()) for t in best_topics]
 
@@ -61,8 +60,8 @@ def subcorpus(request, corpus_name, subcorpus_name):
 def document(request, corpus_name, document_title):
     if not request.user.is_authenticated():
         return redirect_to_login(request.path, login_url='/login/')
-    c = Corpus.objects.get(name=corpus_name)
-    d = Document.objects.all().get(corpus__name=c, title=document_title)
+    d = get_object_or_404(Document, corpus__name=corpus_name, 
+                          title=document_title)
     text = d.documentcontent.text
     return render_to_response('document.html', {'title': d.title,'text': text})
 
@@ -72,10 +71,10 @@ def compare_subcorpora(request, corpus_name):
     subcorpus_name1 = request.GET.get('subcorpus_name1')
     subcorpus_name2 = request.GET.get('subcorpus_name2')
 
-    sc1 = SubCorpus.objects.get(corpus__name=corpus_name, 
-                                name=subcorpus_name1)
-    sc2 = SubCorpus.objects.get(corpus__name=corpus_name, 
-                                name=subcorpus_name2)
+    sc1 = get_object_or_404S(SubCorpus, corpus__name=corpus_name, 
+                             name=subcorpus_name1)
+    sc2 = get_object_or_404S(SubCorpus, corpus__name=corpus_name, 
+                             name=subcorpus_name2)
 
     sc1_topic_probs = sc1.ave_prob_topic_given_doc()
     sc2_topic_probs = sc2.ave_prob_topic_given_doc()
@@ -101,8 +100,12 @@ def compare_subcorpora(request, corpus_name):
 def search(request, corpus_name):
     if not request.user.is_authenticated():
         return redirect_to_login(request.path, login_url='/login/')
-    search_term = request.GET.get('q')
-    pwgts = ProbWordGivenTopic.objects.filter(word=search_term).filter(topic__corpus__name=corpus_name)
+    if request.method != 'GET' or 'q' not in request.GET:
+        search_term = request.GET.get('q')
+    else:
+        raise Http404
+    pwgts = get_list_or_404(ProbWordGivenTopic, 
+                            topic__corpus__name=corpus_name).filter(word=search_term)
     num_results = 5
     best_pwgts = heapq.nlargest(num_results, pwgts, key=lambda x : x.prob)
     word_prob_topics = [(x.topic,
