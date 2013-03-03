@@ -1,6 +1,6 @@
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render_to_response, get_object_or_404, get_list_or_404
 from django.template import RequestContext, loader
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from sesvis.models import *
 from django.contrib.auth.views import redirect_to_login
 from django.contrib.auth import logout
@@ -45,7 +45,7 @@ def topic(request, corpus_name, corpus_topic_id):
 def subcorpus(request, corpus_name, subcorpus_name):
     if not request.user.is_authenticated():
         return redirect_to_login(request.path, login_url='/login/')
-    sc = get_object_or_404(Subcorpus, corpus__name=corpus_name,
+    sc = get_object_or_404(SubCorpus, corpus__name=corpus_name,
                            name=subcorpus_name)
     best_topics = sc.best_k_topics(k=5)
     words_for_topic = [(t, t.best_k_words()) for t in best_topics]
@@ -69,10 +69,10 @@ def compare_subcorpora(request, corpus_name):
     subcorpus_name1 = request.GET.get('subcorpus_name1')
     subcorpus_name2 = request.GET.get('subcorpus_name2')
 
-    sc1 = get_object_or_404S(SubCorpus, corpus__name=corpus_name, 
-                             name=subcorpus_name1)
-    sc2 = get_object_or_404S(SubCorpus, corpus__name=corpus_name, 
-                             name=subcorpus_name2)
+    sc1 = get_object_or_404(SubCorpus, corpus__name=corpus_name, 
+                            name=subcorpus_name1)
+    sc2 = get_object_or_404(SubCorpus, corpus__name=corpus_name, 
+                            name=subcorpus_name2)
 
     sc1_topic_probs = sc1.ave_prob_topic_given_doc()
     sc2_topic_probs = sc2.ave_prob_topic_given_doc()
@@ -99,11 +99,14 @@ def search(request, corpus_name):
     if not request.user.is_authenticated():
         return redirect_to_login(request.path, login_url='/login/')
     if request.method != 'GET' or 'q' not in request.GET:
-        search_term = request.GET.get('q')
-    else:
         raise Http404
-    pwgts = get_list_or_404(ProbWordGivenTopic, 
-                            topic__corpus__name=corpus_name).filter(word=search_term)
+    search_term = request.GET.get('q')
+
+    # Make sure corpus is valid.
+    get_object_or_404(Corpus, name=corpus_name)
+    
+    pwgts = ProbWordGivenTopic.objects.all().filter(topic__corpus__name=corpus_name, 
+                                                    word=search_term)
     num_results = 5
     best_pwgts = heapq.nlargest(num_results, pwgts, key=lambda x : x.prob)
     word_prob_topics = [(x.topic,

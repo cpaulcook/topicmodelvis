@@ -21,7 +21,7 @@ class ModelTest(TestCase):
         self.sc = SubCorpus(name='trysc', corpus=self.c, description='try sc')
         self.sc.save()
 
-        self.sc2 = SubCorpus(name='trysc', corpus=self.c, description='try sc2')
+        self.sc2 = SubCorpus(name='trysc2', corpus=self.c, description='try sc2')
         self.sc2.save()
 
         self.t = Topic(corpus=self.c, corpus_topic_id=3)
@@ -67,6 +67,8 @@ class ModelTest(TestCase):
         self.tlta = TokenLevelTopicAllocation(topic=self.t, document=self.d, token_id=57, 
                                      word='testsareawesome')
         self.tlta.save()
+
+        User.objects.create_user('fakeuser', 'fake@email.com', 'fakepasswd')
 
     def test_is_prob_dist_prob(self):
         self.assertTrue(is_prob_dist([0.5, 0.5]))
@@ -135,20 +137,123 @@ class ModelTest(TestCase):
     def test_tokenleveltopicallocation_unicode(self):
         assert unicode(self.tlta) == u'try:mydoc:1:57:testsareawesome'
 
-class ViewTest(TestCase):
-    
-    def setUp(self):
-        user = self.client.login(username='fakeuser', password='fakepasswd')
-
-    def test_corpora_nologin(self):
+    def test_corpora_view_nologin(self):
         resp = self.client.get('/corpora/')
         self.assertEqual(resp.status_code, 302)        
 
-    def test_corpora_login(self):
-        User.objects.create_user('fakeuser', 'fake@email.com', 'fakepasswd')
-        user = self.client.login(username='fakeuser', password='fakepasswd')
+    def test_corpora_view_login(self):
+        self.client.login(username='fakeuser', password='fakepasswd')
         resp = self.client.get('/corpora/')
-        print resp
         self.assertEqual(resp.status_code, 200)
-
+        self.assertEqual(resp.context['available_corpora'], [self.c])
+        self.client.logout()
     
+    def test_corpus_view_nologin(self):
+        resp = self.client.get('/corpora/try/')
+        self.assertEqual(resp.status_code, 302)        
+
+    def test_corpus_view_nocorpus(self):
+        self.client.login(username='fakeuser', password='fakepasswd')
+        resp = self.client.get('/corpora/nocorpus/')
+        self.assertEqual(resp.status_code, 404)        
+
+    # def test_corpus_view_corpus(self):
+    #     self.client.login(username='fakeuser', password='fakepasswd')
+    #     resp = self.client.get('/corpora/try/')
+    #     self.assertEqual(resp.status_code, 200)        
+    # Need to test the rest of the resp...
+
+    def test_topic_view_nologin(self):
+        resp = self.client.get('/corpora/try/topic/1')
+        self.assertEqual(resp.status_code, 302)        
+
+    def test_topic_view_nocorpus(self):
+        self.client.login(username='fakeuser', password='fakepasswd')
+        resp = self.client.get('/corpora/nocorpus/topic/1')
+        self.assertEqual(resp.status_code, 404)        
+
+    def test_topic_view_notopic(self):
+        self.client.login(username='fakeuser', password='fakepasswd')
+        resp = self.client.get('/corpora/try/topic/173')
+        self.assertEqual(resp.status_code, 404)        
+        self.client.logout()
+
+    def test_subcorpus_view_nologin(self):
+        resp = self.client.get('/corpora/try/subcorpus/trysc')
+        self.assertEqual(resp.status_code, 302)        
+
+    def test_subcorpus_view_nocorpus(self):
+        self.client.login(username='fakeuser', password='fakepasswd')
+        resp = self.client.get('/corpora/nocorpus/subcorpus/trysc')
+        self.assertEqual(resp.status_code, 404)        
+        self.client.logout()
+
+    def test_subcorpus_view_nosubcorpus(self):
+        self.client.login(username='fakeuser', password='fakepasswd')
+        resp = self.client.get('/corpora/try/subcorpus/nosubcorpus')
+        self.assertEqual(resp.status_code, 404)        
+        self.client.logout()
+
+    def test_document_view_nologin(self):
+        resp = self.client.get('/corpora/try/doc/mydoc')
+        self.assertEqual(resp.status_code, 302)        
+
+    def test_document_view_nocorpus(self):
+        self.client.login(username='fakeuser', password='fakepasswd')
+        resp = self.client.get('/corpora/nocorpus/doc/mydoc')
+        self.assertEqual(resp.status_code, 404)        
+        self.client.logout()
+
+    def test_document_view_nodocument(self):
+        self.client.login(username='fakeuser', password='fakepasswd')
+        resp = self.client.get('/corpora/try/doc/nodoc')
+        self.assertEqual(resp.status_code, 404)        
+        self.client.logout()
+
+    def test_compare_subcorpora_view_nologin(self):
+        resp = self.client.get('/corpora/try/compare/?subcorpus_name1=trysc&subcorpus_name2=trysc2')
+        self.assertEqual(resp.status_code, 302)        
+        
+    def test_compare_subcorpora_view_nocorpus(self):
+        self.client.login(username='fakeuser', password='fakepasswd')
+        resp = self.client.get('/corpora/nocorpus/compare/?subcorpus_name1=trysc&subcorpus_name2=trysc2')
+        self.assertEqual(resp.status_code, 404)        
+        self.client.logout()
+
+    def test_compare_subcorpora_view_nosc1(self):
+        self.client.login(username='fakeuser', password='fakepasswd')
+        resp = self.client.get('/corpora/try/compare/?subcorpus_name1=nosc1&subcorpus_name2=trysc2')
+        self.assertEqual(resp.status_code, 404)        
+        self.client.logout()
+
+    def test_compare_subcorpora_view_nosc2(self):
+        self.client.login(username='fakeuser', password='fakepasswd')
+        resp = self.client.get('/corpora/try/compare/?subcorpus_name1=trysc&subcorpus_name2=nosc2')
+        self.assertEqual(resp.status_code, 404)        
+        self.client.logout()
+
+    def test_compare_subcorpora_view_noquery(self):
+        self.client.login(username='fakeuser', password='fakepasswd')
+        resp = self.client.get('/corpora/try/compare/')
+        self.assertEqual(resp.status_code, 404)        
+        self.client.logout()
+
+    def test_search_view_nologin(self):
+        resp = self.client.get('/corpora/try/search/?q=fish')
+        self.assertEqual(resp.status_code, 302)        
+
+    def test_search_view_nocorpus(self):
+        self.client.login(username='fakeuser', password='fakepasswd')
+        resp = self.client.get('/corpora/nocorpus/search/?q=fish')
+        self.assertEqual(resp.status_code, 404)        
+        self.client.logout()
+
+    def test_search_view_noquery(self):
+        self.client.login(username='fakeuser', password='fakepasswd')
+        resp = self.client.get('/corpora/try/search/')
+        self.assertEqual(resp.status_code, 404)        
+        self.client.logout()
+
+    # def test_outlog_view(self):
+
+    # def test_sesvis(self):
